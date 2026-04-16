@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "openstack-mcp": {
+      "command": "python",
+      "args": [
+        "/path/to/openstack-mcp/openstack_mcp_server.py"
+      ],
+      "env": {
+        "OPENSTACK_HOST": "YOUR_CONTROLLER_IP",
+        "OPENSTACK_SSH_PORT": "22",
+        "OPENSTACK_SSH_USER": "YOUR_SSH_USERNAME",
+        "OPENSTACK_SSH_PASSWORD": "YOUR_SSH_PASSWORD",
+        "OPENSTACK_RC_FILE": "/etc/kolla/admin-openrc.sh",
+        "OPENSTACK_LOG_SOURCE": "docker",
+        "OPENSTACK_TIMEOUT": "60"
+      }
+    }
+  }
+}
