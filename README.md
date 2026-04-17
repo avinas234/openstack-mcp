@@ -56,11 +56,6 @@ cp .env.example .env
 python openstack_mcp_server.py
 ```
 
-### 4. Test configuration (optional)
-
-```bash
-python test_server_config.py
-```
 
 ## Using with Claude Desktop
 
@@ -124,24 +119,32 @@ See [CLAUDE_DESKTOP_SETUP.md](CLAUDE_DESKTOP_SETUP.md) for detailed instructions
 
 ## Architecture
 
-```
-┌─────────────────┐     SSH      ┌──────────────────────┐
-│  AI Assistant    │◄────────────►│  OpenStack Controller│
-│  (Claude, etc.)  │   via MCP    │  (nova, neutron,     │
-│                  │              │   keystone, etc.)     │
-│  ┌────────────┐  │              │                      │
-│  │ MCP Client │──┼──stdio───►┌─┴─────────────────┐    │
-│  └────────────┘  │           │ openstack_mcp_server│    │
-└─────────────────┘           │ (this project)      │    │
-                              │                     │    │
-                              │ SSH ────────────────►│    │
-                              └─────────────────────┘    │
-                                                         │
-                              ┌───────────────────────────┘
-                              │ openstack server list
-                              │ docker logs nova_api
-                              │ journalctl -u nova
-                              └─── CLI commands executed
+```mermaid
+flowchart LR
+    subgraph AI["AI Assistant (Claude, etc.)"]
+        MCP_Client["MCP Client"]
+    end
+
+    subgraph Server["openstack_mcp_server.py"]
+        MCP_Server["MCP Server\n(stdio transport)"]
+        SSH_Client["SSH Client\n(asyncssh)"]
+        Tools["70 Read-Only Tools"]
+    end
+
+    subgraph Controller["OpenStack Controller Node"]
+        CLI["OpenStack CLI"]
+        Docker["Docker / Systemd"]
+        Logs["Service Logs"]
+        Services["Nova · Neutron · Keystone\nCinder · Glance · Heat\nSwift · Octavia"]
+    end
+
+    MCP_Client -- "stdio (JSON-RPC)" --> MCP_Server
+    MCP_Server --> Tools
+    Tools --> SSH_Client
+    SSH_Client -- "SSH" --> CLI
+    SSH_Client -- "SSH" --> Docker
+    SSH_Client -- "SSH" --> Logs
+    CLI --> Services
 ```
 
 ## Security
